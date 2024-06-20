@@ -71,7 +71,7 @@ public class ChatServer {
     }
 
     public static void main(String[] args) {
-        int port = 50000;
+        int port = 60000;
         try {
             ChatServer server = new ChatServer(port);
             server.start();
