@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
 import java.net.Socket;
+import src.database.UserAuthentication;
+import java.util.Set;
 
 
 public class ChatClientLogic {
@@ -38,7 +40,7 @@ public class ChatClientLogic {
     private void processIncomingMessage(String message) {
         String[] parts = message.split(": ", 2);
         String recipient = parts[0];
-        // String content = parts.length > 1 ? parts[1] : "";
+         String content = parts.length > 1 ? parts[1] : "";
         String currentRecipient = gui.getCurrentRecipient();
         
         if (recipient.equals(currentRecipient) || recipient.equals("ALL") || currentRecipient.contains(recipient)) {
@@ -88,5 +90,14 @@ public class ChatClientLogic {
             }
         }
     }
-    
+    public void fetchAllUsers() {
+        Set<String> allUsers = UserAuthentication.getAllUsers();
+        SwingUtilities.invokeLater(() -> {
+            gui.getUserListModel().clear();
+            for (String user : allUsers) {
+                gui.getUserListModel().addElement(user);
+            }
+        });
+    }
+
 }

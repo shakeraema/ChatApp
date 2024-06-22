@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch ChatApp",
+            "request": "launch",
+            "mainClass": "src.client.ChatApp",
+            "classpath": [
+                "bin",
+                "lib/mysql-connector-java-8.4.0.jar"
+            ]
+        }
+    ]
+}

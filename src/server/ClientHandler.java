@@ -3,6 +3,8 @@ package src.server;
 import java.io.*;
 import java.net.*;
 
+import src.database.UserAuthentication;
+import src.database.UserRegistration;
 
 public class ClientHandler extends Thread {
     Socket clientSocket;
@@ -20,18 +22,50 @@ public class ClientHandler extends Thread {
         try {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            boolean isAuthenticated = true;
+            while (!isAuthenticated) {
+                out.println("Do you have an account? (yes/no)");
+                String response = in.readLine();
+                if ("no".equalsIgnoreCase(response)) {
+                    out.println("Enter username to register:");
+                    String username = in.readLine();
+                    out.println("Enter password:");
+                    String password = in.readLine();
+                    if (UserRegistration.registerUser(username, password)) {
+                        out.println("Registration successful. You can now log in.");
+                    } else {
+                        out.println("Registration failed. Please try again.");
+                    }
+                }
+
+                out.println("Enter your username:");
+                String username = in.readLine();
+                out.println("Enter your password:");
+                String password = in.readLine();
+                isAuthenticated = UserAuthentication.authenticateUser(username, password);
+                if (isAuthenticated) {
+                    this.username = username;
+                    server.addUser(username, this);
+                    out.println("Authenticated successfully!");
+                    server.updateClientUserList();
+                } else {
+                    out.println("Authentication failed. Please try again.");
+                }
+            }
+
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 if (inputLine.startsWith("/pm")) {
-                    // Private message: /pm recipient message
+                    // private message: /pm recipient message
                     String[] parts = inputLine.split(" ", 3);
                     if (parts.length == 3) {
                         String recipient = parts[1];
                         String message = parts[2];
                         server.privateMessage(this.username + " (private): " + message, recipient);
                     }
-                } else if (inputLine.startsWith("/group")) {
-                    // Group message: /group user1,user2 message
+                } else if (inputLine.startsWith("/gm")) {
+                    // group message: /gm user1,user2 message
                     String[] parts = inputLine.split(" ", 3);
                     if (parts.length == 3) {
                         String[] recipients = parts[1].split(",");

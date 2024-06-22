@@ -2,12 +2,21 @@ package src.client;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import src.database.UserAuthentication;
+import src.database.UserRegistration;
+
 import java.awt.*;
 import java.awt.event.*;
 
 public class ChatClientGUI {
 
     private JFrame frame;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+    private JButton actionButton;
+    private JButton switchModeButton;
+    private JPanel loginPanel;
     private JPanel chatPanel;
     private JTextArea messageArea;
     private JTextField inputField;
@@ -20,8 +29,29 @@ public class ChatClientGUI {
     private DefaultListModel<String> activeUserListModel;
     private JList<String> activeUserList;
     private String currentRecipient = "All Messages"; // To handle private/group messages
+    private boolean isRegisterMode = false;
+    private boolean isAuthenticated = false;
+    private ChatClientLogic clientLogic;
+
 
     public ChatClientGUI() {
+
+        clientLogic = new ChatClientLogic(this);
+
+        // Login panel setup
+        loginPanel = new JPanel(new GridLayout(4, 2));
+        usernameField = new JTextField();
+        passwordField = new JPasswordField();
+        actionButton = new JButton("Login");
+        switchModeButton = new JButton("New user? Register");
+
+        loginPanel.add(new JLabel("Username:"));
+        loginPanel.add(usernameField);
+        loginPanel.add(new JLabel("Password:"));
+        loginPanel.add(passwordField);
+        loginPanel.add(actionButton);
+        loginPanel.add(switchModeButton);
+
         // Chat panel setup
         chatPanel = new JPanel(new BorderLayout());
         messageArea = new JTextArea(25, 60);
@@ -44,6 +74,7 @@ public class ChatClientGUI {
         userListModel = new DefaultListModel<>();
         userList = new JList<>(userListModel);
         userList.setBorder(new EmptyBorder(10, 10, 10, 10));
+
         JScrollPane userScrollPane = new JScrollPane(userList);
         activeUserListModel = new DefaultListModel<>();
         activeUserList = new JList<>(activeUserListModel);
@@ -59,11 +90,49 @@ public class ChatClientGUI {
         // Frame setup
         frame = new JFrame("Chat Client");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(loginPanel);
+        frame.pack();
+        frame.setVisible(true);
 
-        // sendButton.addActionListener(e -> clientLogic.sendMessage());
-        // inputField.addActionListener(e -> clientLogic.sendMessage());
+        // Action listeners
+        actionButton.addActionListener(e -> {
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword()).trim();
+            if (!isRegisterMode) {
+                if (!isAuthenticated) {
+                    if (UserAuthentication.authenticateUser(username, password)) {
+                        isAuthenticated = true;
+                        switchToChatPanel();
+                        clientLogic.startConnection("127.0.0.1", 50000);
+                        clientLogic.fetchAllUsers();
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Invalid username or password");
+                    }
+                } else {
+                    clientLogic.sendMessage();
+                }
+            } else {
+                if (UserRegistration.registerUser(username, password)) {
+                    JOptionPane.showMessageDialog(frame, "Registration successful");
+                    switchToLoginMode();
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Failed to register");
+                }
+            }
+        });
+
+        switchModeButton.addActionListener(e -> {
+            if (isRegisterMode) {
+                switchToLoginMode();
+            } else {
+                switchToRegisterMode();
+            }
+        });
+
+        sendButton.addActionListener(e -> clientLogic.sendMessage());
+        inputField.addActionListener(e -> clientLogic.sendMessage());
         emojiButton.addActionListener(e -> showEmojiPopup(emojiButton));
-        // fileButton.addActionListener(e -> clientLogic.sendFile());
+        fileButton.addActionListener(e -> clientLogic.sendFile());
         userList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (SwingUtilities.isRightMouseButton(evt)) {
@@ -163,4 +232,27 @@ public class ChatClientGUI {
         this.currentRecipient = currentRecipient;
     }
 
+    private void switchToLoginMode() {
+        isRegisterMode = false;
+        actionButton.setText("Login");
+        switchModeButton.setText("Switch to Register");
+        frame.remove(chatPanel);
+        frame.add(loginPanel);
+        frame.pack();
+    }
+
+    private void switchToRegisterMode() {
+        isRegisterMode = true;
+        actionButton.setText("Register");
+        switchModeButton.setText("Switch to Login");
+        frame.remove(chatPanel);
+        frame.add(loginPanel);
+        frame.pack();
+    }
+
+    public void switchToChatPanel() {
+        frame.remove(loginPanel);
+        frame.add(chatPanel);
+        frame.pack();
+    }
 }
