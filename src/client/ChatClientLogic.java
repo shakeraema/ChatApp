@@ -69,7 +69,7 @@ public class ChatClientLogic {
             File selectedFile = fileChooser.getSelectedFile();
 
             try {
-                Socket fileSocket = new Socket("192.168.1.10", 60001); // Assuming the server is listening on port 60001 for file transfers
+                Socket fileSocket = new Socket("127.0.0.1", 60001); // Assuming the server is listening on port 60001 for file transfers
                 DataOutputStream dos = new DataOutputStream(fileSocket.getOutputStream());
                 FileInputStream fis = new FileInputStream(selectedFile);
                 // Send file name, file size, and recipient information

@@ -103,7 +103,7 @@ public class ChatClientGUI {
                     if (UserAuthentication.authenticateUser(username, password)) {
                         isAuthenticated = true;
                         switchToChatPanel();
-                        clientLogic.startConnection("127.0.0.1", 50000);
+                        clientLogic.startConnection("127.0.0.1", 60000);
                         clientLogic.fetchAllUsers();
                     } else {
                         JOptionPane.showMessageDialog(frame, "Invalid username or password");

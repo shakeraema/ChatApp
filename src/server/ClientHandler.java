@@ -12,6 +12,7 @@ public class ClientHandler extends Thread {
     private PrintWriter out;
     private BufferedReader in;
     private String username;
+    private String status = "online";
 
     public ClientHandler(Socket socket, ChatServer server) {
         this.clientSocket = socket;
@@ -56,13 +57,17 @@ public class ClientHandler extends Thread {
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                if (inputLine.startsWith("/pm")) {
-                    // private message: /pm recipient message
-                    String[] parts = inputLine.split(" ", 3);
-                    if (parts.length == 3) {
-                        String recipient = parts[1];
-                        String message = parts[2];
-                        server.privateMessage(this.username + " (private): " + message, recipient);
+                if (inputLine.startsWith("/status")) {
+                    String[] parts = inputLine.split(" ", 2);
+                    if (parts.length == 2) {
+                        setStatus(parts[1]);
+                        server.updateUserStatus(username, parts[1]);
+                    }
+                } else if (inputLine.startsWith("/status")) {
+                    String[] parts = inputLine.split(" ", 2);
+                    if (parts.length == 2) {
+                        setStatus(parts[1]);
+                        server.updateUserStatus(username, parts[1]);
                     }
                 } else if (inputLine.startsWith("/gm")) {
                     // group message: /gm user1,user2 message
@@ -136,5 +141,13 @@ public class ClientHandler extends Thread {
 
     public String getUsername() {
         return username;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    public String getStatus() {
+        return status;
     }
 }

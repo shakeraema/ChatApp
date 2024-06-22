@@ -58,8 +58,8 @@ public class ChatServer {
 
     public synchronized void updateClientUserList() {
         StringBuilder userList = new StringBuilder("User List:");
-        for (String user : userMap.keySet()) {
-            userList.append(user).append(",");
+        for (Map.Entry<String, ClientHandler> entry : userMap.entrySet()) {
+            userList.append(entry.getKey()).append(" (").append(entry.getValue().getStatus()).append("),");
         }
         if (userList.length() > 9) {
             userList.setLength(userList.length() - 1); // Remove trailing comma
@@ -67,6 +67,14 @@ public class ChatServer {
         String userListMessage = userList.toString();
         for (ClientHandler clientHandler : clientHandlers) {
             clientHandler.sendMessage(userListMessage);
+        }
+    }
+
+    public synchronized void updateUserStatus(String username, String status) {
+        ClientHandler clientHandler = userMap.get(username);
+        if (clientHandler != null) {
+            clientHandler.setStatus(status);
+            updateClientUserList();
         }
     }
 

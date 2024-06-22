@@ -33,7 +33,7 @@ public class ChatClient {
     public static void main(String[] args) {
         ChatClient client = new ChatClient();
         try {
-            client.startConnection("192.168.1.10", 60000); // Update the IP and port as necessary
+            client.startConnection("127.0.0.1", 60000); // Update the IP and port as necessary
             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
             String userInput;
             while ((userInput = stdIn.readLine()) != null) {
